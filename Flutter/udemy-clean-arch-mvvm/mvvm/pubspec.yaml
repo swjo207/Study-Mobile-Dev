@@ -42,6 +42,9 @@ dependencies:
   pretty_dio_logger: ^1.2.0-beta-1
   shared_preferences: ^2.0.8
   device_info: ^2.0.2
+  freezed: ^0.14.2
+  freezed_annotation: ^0.14.0
+  json_annotation: any
 
 dev_dependencies:
   flutter_test:

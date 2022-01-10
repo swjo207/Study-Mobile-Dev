@@ -7,14 +7,17 @@ part of 'app_api.dart';
 // **************************************************************************
 
 class _AppServiceClient implements AppServiceClient {
-  _AppServiceClient(this._dio, {this.baseUrl});
+  _AppServiceClient(this._dio, {this.baseUrl}) {
+    baseUrl ??= 'http://minafarid123.mocklab.io';
+  }
 
   final Dio _dio;
 
   String? baseUrl;
 
   @override
-  Future<dynamic> login(email, password, imei, deviceType) async {
+  Future<AuthenticationResponse> login(
+      email, password, imei, deviceType) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -24,12 +27,13 @@ class _AppServiceClient implements AppServiceClient {
       'imei': imei,
       'deviceType': deviceType
     };
-    final _result = await _dio.fetch(_setStreamType<dynamic>(
-        Options(method: 'POST', headers: _headers, extra: _extra)
-            .compose(_dio.options, '/customers/login',
-                queryParameters: queryParameters, data: _data)
-            .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
-    final value = _result.data;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<AuthenticationResponse>(
+            Options(method: 'POST', headers: _headers, extra: _extra)
+                .compose(_dio.options, '/customers/login',
+                    queryParameters: queryParameters, data: _data)
+                .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = AuthenticationResponse.fromJson(_result.data!);
     return value;
   }
 
