@@ -5,6 +5,8 @@ import 'package:mvvm/data/network/error_handler.dart';
 import 'package:mvvm/data/network/failure.dart';
 import 'package:mvvm/data/network/network_info.dart';
 import 'package:mvvm/data/request/request.dart';
+import 'package:mvvm/domain/model/model.dart';
+import 'package:mvvm/domain/repository/repository.dart';
 
 class RepositoryImpl extends Repository {
   RemoteDataSource _remoteDataSource;
