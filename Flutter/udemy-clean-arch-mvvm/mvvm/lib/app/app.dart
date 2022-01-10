@@ -3,11 +3,10 @@ import 'package:mvvm/presentation/resources/routes_manager.dart';
 import 'package:mvvm/presentation/resources/theme_manager.dart';
 
 class MyApp extends StatefulWidget {
-  // const MyApp({Key? key}) : super(key: key); // 기본 생성자
   MyApp._internal(); // private named constructor
   int appState = 0;
-
-  static final MyApp instance = MyApp._internal(); // 싱글 인스턴스 (Singleton)
+  static final MyApp instance =
+      MyApp._internal(); // single instance -- singleton
 
   factory MyApp() => instance; // factory for the class instance
 
