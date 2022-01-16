@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:mvvm/data/mapper/mapper.dart';
 import 'package:mvvm/presentation/common/state_renderer/state_render.dart';
@@ -16,7 +17,7 @@ class LoadingState extends FlowState {
   String message;
 
   LoadingState({required this.stateRendererType, String? message})
-      : message = message ?? AppStrings.loading;
+      : message = message ?? AppStrings.loading.tr();
 
   @override
   String getMessage() => message;
@@ -67,6 +68,19 @@ class EmptyState extends FlowState {
       StateRendererType.EMPTY_SCREEN_STATE;
 }
 
+// success state
+class SuccessState extends FlowState {
+  String message;
+
+  SuccessState(this.message);
+
+  @override
+  String getMessage() => message;
+
+  @override
+  StateRendererType getStateRendererType() => StateRendererType.POPUP_SUCCESS;
+}
+
 extension FlowStateExtension on FlowState {
   Widget getScreenWidget(BuildContext context, Widget contentScreenWidget,
       Function retryActionFunction) {
@@ -114,6 +128,17 @@ extension FlowStateExtension on FlowState {
               message: getMessage(),
               retryActionFunction: retryActionFunction);
         }
+      case SuccessState:
+        {
+          // i should check if we are showing loading popup to remove it before showing success popup
+          dismissDialog(context);
+
+          // show popup
+          showPopUp(context, StateRendererType.POPUP_SUCCESS, getMessage(),
+              title: AppStrings.success.tr());
+          // return content ui of the screen
+          return contentScreenWidget;
+        }
       default:
         {
           return contentScreenWidget;
@@ -130,13 +155,15 @@ extension FlowStateExtension on FlowState {
   _isThereCurrentDialogShowing(BuildContext context) =>
       ModalRoute.of(context)?.isCurrent != true;
 
-  showPopUp(BuildContext context, StateRendererType stateRendererType,
-      String message) {
+  showPopUp(
+      BuildContext context, StateRendererType stateRendererType, String message,
+      {String title = EMPTY}) {
     WidgetsBinding.instance?.addPostFrameCallback((_) => showDialog(
         context: context,
         builder: (BuildContext context) => StateRenderer(
               stateRendererType: stateRendererType,
               message: message,
+              title: title,
               retryActionFunction: () {},
             )));
   }

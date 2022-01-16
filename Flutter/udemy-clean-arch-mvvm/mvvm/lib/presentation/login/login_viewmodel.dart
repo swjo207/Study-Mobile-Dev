@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:mvvm/domain/usecase/login_usecase.dart';
 import 'package:mvvm/presentation/base/baseviewmodel.dart';
 import 'package:mvvm/presentation/common/freezed_data_classes.dart';
+import 'package:mvvm/presentation/common/state_renderer/state_render.dart';
 import 'package:mvvm/presentation/common/state_renderer/state_render_impl.dart';
 
 class LoginViewModel extends BaseViewModel
@@ -14,6 +15,9 @@ class LoginViewModel extends BaseViewModel
 
   StreamController _isAllInputsValidStreamController =
       StreamController<void>.broadcast();
+
+  StreamController isUserLoggedInSuccessfullyStreamController =
+      StreamController<String>();
 
   var loginObject = LoginObject("", "");
 
@@ -27,6 +31,7 @@ class LoginViewModel extends BaseViewModel
     _userNameStreamController.close();
     _isAllInputsValidStreamController.close();
     _passwordStreamController.close();
+    isUserLoggedInSuccessfullyStreamController.close();
   }
 
   @override
@@ -46,17 +51,22 @@ class LoginViewModel extends BaseViewModel
 
   @override
   login() async {
+    inputState.add(
+        LoadingState(stateRendererType: StateRendererType.POPUP_LOADING_STATE));
     (await _loginUseCase.execute(
             LoginUseCaseInput(loginObject.userName, loginObject.password)))
         .fold(
             (failure) => {
                   // left -> failure
-                  print(failure.message)
-                },
-            (data) => {
-                  // right -> success (data)
-                  print(data.customer?.name)
-                });
+                  inputState.add(ErrorState(
+                      StateRendererType.POPUP_ERROR_STATE, failure.message))
+                }, (data) {
+      // right -> success (data)
+      inputState.add(ContentState());
+
+      // navigate to main screen after the login
+      isUserLoggedInSuccessfullyStreamController.add("abcdefgh");
+    });
   }
 
   @override

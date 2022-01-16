@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:mvvm/app/app_prefs.dart';
 import 'package:mvvm/app/di.dart';
+import 'package:mvvm/presentation/common/state_renderer/state_render_impl.dart';
 import 'package:mvvm/presentation/login/login_viewmodel.dart';
 import 'package:mvvm/presentation/resources/assets_manager.dart';
 import 'package:mvvm/presentation/resources/color_manager.dart';
 import 'package:mvvm/presentation/resources/routes_manager.dart';
 import 'package:mvvm/presentation/resources/strings_manager.dart';
 import 'package:mvvm/presentation/resources/values_manager.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -16,6 +20,7 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   LoginViewModel _viewModel = instance<LoginViewModel>();
+  AppPreferences _appPreferences = instance<AppPreferences>();
 
   TextEditingController _userNameController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
@@ -27,6 +32,17 @@ class _LoginViewState extends State<LoginView> {
         .addListener(() => _viewModel.setUserName(_userNameController.text));
     _passwordController
         .addListener(() => _viewModel.setPassword(_passwordController.text));
+
+    _viewModel.isUserLoggedInSuccessfullyStreamController.stream
+        .listen((token) {
+      // navigate to main screen
+      SchedulerBinding.instance?.addPostFrameCallback((_) {
+        _appPreferences.setUserToken(token);
+        _appPreferences.setIsUserLoggedIn();
+        resetModules();
+        Navigator.of(context).pushReplacementNamed(Routes.mainRoute);
+      });
+    });
   }
 
   @override
@@ -37,13 +53,23 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    return _getContentWidget();
+    return Scaffold(
+      backgroundColor: ColorManager.white,
+      body: StreamBuilder<FlowState>(
+        stream: _viewModel.outputState,
+        builder: (context, snapshot) {
+          return snapshot.data?.getScreenWidget(context, _getContentWidget(),
+                  () {
+                _viewModel.login();
+              }) ??
+              _getContentWidget();
+        },
+      ),
+    );
   }
 
   Widget _getContentWidget() {
-    return Scaffold(
-      backgroundColor: ColorManager.white,
-      body: Container(
+    return Container(
         padding: EdgeInsets.only(top: AppPadding.p100),
         child: SingleChildScrollView(
           child: Form(
@@ -62,11 +88,11 @@ class _LoginViewState extends State<LoginView> {
                         keyboardType: TextInputType.emailAddress,
                         controller: _userNameController,
                         decoration: InputDecoration(
-                            hintText: AppStrings.username,
-                            labelText: AppStrings.username,
+                            hintText: AppStrings.username.tr(),
+                            labelText: AppStrings.username.tr(),
                             errorText: (snapshot.data ?? true)
                                 ? null
-                                : AppStrings.usernameError),
+                                : AppStrings.usernameError.tr()),
                       );
                     },
                   ),
@@ -82,11 +108,11 @@ class _LoginViewState extends State<LoginView> {
                         keyboardType: TextInputType.visiblePassword,
                         controller: _passwordController,
                         decoration: InputDecoration(
-                            hintText: AppStrings.password,
-                            labelText: AppStrings.password,
+                            hintText: AppStrings.password.tr(),
+                            labelText: AppStrings.password.tr(),
                             errorText: (snapshot.data ?? true)
                                 ? null
-                                : AppStrings.passwordError),
+                                : AppStrings.passwordError.tr()),
                       );
                     },
                   ),
@@ -107,7 +133,7 @@ class _LoginViewState extends State<LoginView> {
                                       _viewModel.login();
                                     }
                                   : null,
-                              child: Text(AppStrings.login)),
+                              child: Text(AppStrings.login.tr())),
                         );
                       },
                     )),
@@ -122,19 +148,20 @@ class _LoginViewState extends State<LoginView> {
                     children: [
                       TextButton(
                         onPressed: () {
-                          Navigator.pushReplacementNamed(
+                          Navigator.pushNamed(
                               context, Routes.forgotPasswordRoute);
                         },
                         child: Text(AppStrings.forgetPassword,
-                            style: Theme.of(context).textTheme.subtitle2),
+                                style: Theme.of(context).textTheme.subtitle2)
+                            .tr(),
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.pushReplacementNamed(
-                              context, Routes.registerRoute);
+                          Navigator.pushNamed(context, Routes.registerRoute);
                         },
                         child: Text(AppStrings.registerText,
-                            style: Theme.of(context).textTheme.subtitle2),
+                                style: Theme.of(context).textTheme.subtitle2)
+                            .tr(),
                       )
                     ],
                   ),
@@ -142,9 +169,7 @@ class _LoginViewState extends State<LoginView> {
               ],
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   @override

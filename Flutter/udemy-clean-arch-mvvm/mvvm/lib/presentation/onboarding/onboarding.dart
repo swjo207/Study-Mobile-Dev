@@ -1,13 +1,15 @@
+import 'package:mvvm/app/app_prefs.dart';
+import 'package:mvvm/app/di.dart';
 import 'package:mvvm/domain/model/model.dart';
 import 'package:mvvm/presentation/onboarding/onboarding_viewmodel.dart';
 import 'package:mvvm/presentation/resources/assets_manager.dart';
 import 'package:mvvm/presentation/resources/color_manager.dart';
 import 'package:mvvm/presentation/resources/strings_manager.dart';
 import 'package:mvvm/presentation/resources/values_manager.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../resources/routes_manager.dart';
 
@@ -21,8 +23,10 @@ class OnBoardingView extends StatefulWidget {
 class _OnBoardingViewState extends State<OnBoardingView> {
   PageController _pageController = PageController(initialPage: 0);
   OnBoardingViewModel _viewModel = OnBoardingViewModel();
+  AppPreferences _appPreferences = instance<AppPreferences>();
 
   _bind() {
+    _appPreferences.setOnBoardingScreenViewed();
     _viewModel.start();
   }
 
@@ -81,7 +85,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                       AppStrings.skip,
                       style: Theme.of(context).textTheme.subtitle2,
                       textAlign: TextAlign.end,
-                    ),
+                    ).tr(),
                   )),
               // add layout for indicator and arrows
               _getBottomSheetWidget(sliderViewObject)
